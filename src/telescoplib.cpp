@@ -59,9 +59,59 @@ int stop_now(void)
 	return t.stop_now();
 }
 
-Status get_status(void)
+int get_speed_coeff(char ax, double *coeff)
 {
-	return t.get_status();
+	return t.get_speed_coeff(ax, coeff);
+}
+
+int set_speed_coeff(char ax, double *coeff)
+{
+	return t.set_speed_coeff(ax, coeff);
+}
+
+int get_weather(double *temperature, double *humidity, double *pressure)
+{
+	*temperature	= t.get_status().temperature;
+	*humidity		= t.get_status().humidity;
+	*pressure		= t.get_status().pressure;
+	return 0;
+}
+
+int get_power_status(double *Vdc_in, double *camera_current, double *motor_current, double *USB_current)
+{
+	*Vdc_in			= t.get_status().Vdc_in;
+	*camera_current = t.get_status().camera_current;
+	*motor_current	= t.get_status().motor_current;
+	*USB_current	= t.get_status().USB_current;
+	return 0;
+}
+
+int get_wifi_status(unsigned short *ip)
+{
+	t.get_wifi_status(ip);
+	return 0;
+}
+
+int set_wifi_ssid(const char *ssid)
+{
+	t.set_wifi_ssid(ssid);
+	return 0;
+}
+
+int set_wifi_password(const char *passw)
+{
+	t.set_wifi_password(passw);
+	return 0;
+}
+
+int set_rtcc(void)
+{
+	return t.set_rtcc();
+}
+
+int get_rtcc(struct tm *time)
+{
+	return t.get_rtcc(time);
 }
 
 

@@ -171,16 +171,20 @@
     <ClInclude Include="src\CommandDef.h" />
     <ClInclude Include="src\Motors.h" />
     <ClInclude Include="src\MyTimer.h" />
+    <ClInclude Include="src\RTCC.h" />
     <ClInclude Include="src\SubModule.h" />
     <ClInclude Include="src\TelescopeClass.h" />
     <ClInclude Include="src\telescopelib.h" />
+    <ClInclude Include="src\Wifi.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Motors.cpp" />
     <ClCompile Include="src\MyTimer.cpp" />
+    <ClCompile Include="src\RTCC.cpp" />
     <ClCompile Include="src\SubModule.cpp" />
     <ClCompile Include="src\TelescopeClass.cpp" />
     <ClCompile Include="src\telescoplib.cpp" />
+    <ClCompile Include="src\Wifi.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

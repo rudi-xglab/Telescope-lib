@@ -4,12 +4,16 @@
 
 int Telescope::init()
 {
+	if (initialized)
+		close();
+
 	camera	= new SubModule(SET_CAMERA_EN, GET_CAMERA_EN);
 	dc24	= new SubModule(SET_24V_EN, GET_24V_EN);
 	pd		= new SubModule(SET_PD_EN, GET_PD_EN);
 	usb		= new SubModule(SET_USB_EN, GET_USB_EN);
-	wifi	= new SubModule(SET_WIFI_EN, GET_WIFI_EN);
+	wifi	= new Wifi();
 	motors	= new Motors();
+	rtcc	= new RTCC();
 
 
 	hid_device_info *devs, *cur_dev;
@@ -40,12 +44,14 @@ int Telescope::close()
 	delete usb;
 	delete wifi;
 	delete motors;
+	delete rtcc;
 
 	status_tmr->stop();
 	delete status_tmr;
 
 	hid_close(hid_handle);
 
+	initialized = false;
 	return 0;
 }
 
@@ -62,6 +68,8 @@ int Telescope::startup()
 	status_tmr->assign_callback([this] {read_status(); });
 	status_tmr->set_timeout(0.200);
 	status_tmr->start();
+
+	initialized = true;
 
 	return 0;
 }
@@ -129,6 +137,16 @@ int Telescope::stop_now(void)
 	return motors->stop(hid_handle);
 }
 
+int Telescope::get_speed_coeff(char ax, double *coeff)
+{
+	return motors->get_speed_coefficient(hid_handle, (axis)ax, coeff);
+}
+
+int Telescope::set_speed_coeff(char ax, double *coeff)
+{
+	return motors->set_speed_coefficient(hid_handle, (axis)ax, coeff);
+}
+
 void Telescope::read_status(void)
 {
 	std::unique_lock<std::timed_mutex> lck(mtx);
@@ -165,4 +183,33 @@ void Telescope::read_status(void)
 Status Telescope::get_status(void)
 {
 	return status;
+}
+
+int Telescope::get_wifi_status(unsigned short *ip)
+{
+	wifi->read_status(hid_handle, ip);
+	return 0;
+}
+
+int Telescope::set_wifi_ssid(const char *str)
+{
+	wifi->set_ssid(hid_handle, str);
+	return 0;
+}
+
+int Telescope::set_wifi_password(const char *str)
+{
+	wifi->set_password(hid_handle, str);
+	return 0;
+}
+
+
+int Telescope::set_rtcc(void)
+{
+	return rtcc->set(hid_handle);
+}
+
+int Telescope::get_rtcc(struct tm *time)
+{
+	return rtcc->get(hid_handle, time);
 }
