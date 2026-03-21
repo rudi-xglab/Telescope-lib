@@ -1,6 +1,10 @@
 #include "TelescopeClass.h"
 
 #define LOCK_ERROR -100
+#define check_mutex() \
+	std::unique_lock<std::timed_mutex> lck(mtx); \
+	if (!lck.try_lock_for(std::chrono::milliseconds(100))) \
+	return LOCK_ERROR;
 
 int Telescope::init()
 {
@@ -76,82 +80,61 @@ int Telescope::startup()
 
 int Telescope::move_right(double degrees)
 {
-	std::unique_lock<std::timed_mutex> lck(mtx);
-	if (!lck.try_lock_for(std::chrono::milliseconds(100)))
-		return LOCK_ERROR;
-
+	check_mutex();
 	return motors->move_x(hid_handle, SLOW, RIGHT, degrees);
 }
 
 int Telescope::move_left(double degrees)
 {
-	std::unique_lock<std::timed_mutex> lck(mtx);
-	if (!lck.try_lock_for(std::chrono::milliseconds(100)))
-		return LOCK_ERROR;
-
+	check_mutex();
 	return motors->move_x(hid_handle, SLOW, LEFT, degrees);
 }
 
 int Telescope::move_up(double hms)
 {
-	std::unique_lock<std::timed_mutex> lck(mtx);
-	if (!lck.try_lock_for(std::chrono::milliseconds(100)))
-		return LOCK_ERROR;
-
+	check_mutex();
 	return motors->move_y(hid_handle, SLOW, UP, hms);
 }
 
 int Telescope::move_down(double hms)
 {
-	std::unique_lock<std::timed_mutex> lck(mtx);
-	if (!lck.try_lock_for(std::chrono::milliseconds(100)))
-		return LOCK_ERROR;
-
+	check_mutex();
 	return motors->move_y(hid_handle, SLOW, DOWN, hms);
 }
 
 int Telescope::enable_tracking(void)
 {
-	std::unique_lock<std::timed_mutex> lck(mtx);
-	if (!lck.try_lock_for(std::chrono::milliseconds(100)))
-		return LOCK_ERROR;
-
+	check_mutex();
 	return motors->enable_tracking(hid_handle);
 }
 
 int Telescope::disable_tracking(void)
 {
-	std::unique_lock<std::timed_mutex> lck(mtx);
-	if (!lck.try_lock_for(std::chrono::milliseconds(100)))
-		return LOCK_ERROR;
-
+	check_mutex();
 	return motors->disable_tracking(hid_handle);
 }
 
 int Telescope::stop_now(void)
 {
-	std::unique_lock<std::timed_mutex> lck(mtx);
-	if (!lck.try_lock_for(std::chrono::milliseconds(100)))
-		return LOCK_ERROR;
-
+	check_mutex();
 	return motors->stop(hid_handle);
 }
 
 int Telescope::get_speed_coeff(char ax, double *coeff)
 {
+	check_mutex();
 	return motors->get_speed_coefficient(hid_handle, (axis)ax, coeff);
 }
 
 int Telescope::set_speed_coeff(char ax, double *coeff)
 {
+	check_mutex();
 	return motors->set_speed_coefficient(hid_handle, (axis)ax, coeff);
 }
 
-void Telescope::read_status(void)
+int Telescope::read_status(void)
 {
-	std::unique_lock<std::timed_mutex> lck(mtx);
-	if (!lck.try_lock_for(std::chrono::milliseconds(100)))
-		return;
+	check_mutex();
 
 	unsigned char data[100];
 	data[0] = 0x00;
@@ -178,6 +161,7 @@ void Telescope::read_status(void)
 	status.USB_current = (data[19] << 8 | data[18]) / 32768.0 * 2.048 / 0.05 * 1.5e3 / 10 / 8;
 	status.Uptime = (double)(data[23] << 24 | data[22] << 16 | data[21] << 8 | data[20]) / 100.0;
 
+	return 0;
 }
 
 Status Telescope::get_status(void)
@@ -187,29 +171,32 @@ Status Telescope::get_status(void)
 
 int Telescope::get_wifi_status(unsigned short *ip)
 {
+	check_mutex();
 	wifi->read_status(hid_handle, ip);
 	return 0;
 }
 
 int Telescope::set_wifi_ssid(const char *str)
 {
-	wifi->set_ssid(hid_handle, str);
-	return 0;
+	check_mutex();
+	return wifi->set_ssid(hid_handle, str);
 }
 
 int Telescope::set_wifi_password(const char *str)
 {
-	wifi->set_password(hid_handle, str);
-	return 0;
-}
+	check_mutex();
+	return wifi->set_password(hid_handle, str);
+	}
 
 
 int Telescope::set_rtcc(void)
 {
+	check_mutex();
 	return rtcc->set(hid_handle);
 }
 
 int Telescope::get_rtcc(struct tm *time)
 {
+	check_mutex();
 	return rtcc->get(hid_handle, time);
 }

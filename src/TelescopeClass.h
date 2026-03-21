@@ -44,7 +44,7 @@ public:
 	int get_speed_coeff		(char ax, double *coeff);
 	int set_speed_coeff		(char ax, double *coeff);
 
-	void read_status		(void);
+	int read_status			(void);
 	Status get_status		(void);
 
 	int get_wifi_status		(unsigned short *ip);
